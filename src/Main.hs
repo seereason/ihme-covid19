@@ -12,7 +12,8 @@ import Data.Vector hiding ((!), mapM_, sum, take, toList)
 import Prelude hiding (readFile)
 import Text.Printf
 
-path = "2020_03_29/hospitalization_all_locs_corrected.csv"
+-- path = "2020_03_29/hospitalization_all_locs_corrected.csv
+path = "2020_03_30/Hospitalization_all_locs.csv"
 
 data State
   = State
@@ -81,8 +82,9 @@ stateInfo =
   , State "Wyoming" 567025 0 ]
 
 data Rec = Rec
-  { location_name :: String
-  , date_reported :: String
+  { v1 :: String
+  , location :: String
+  , date :: String
   , allbed_mean :: Double
   , allbed_lower :: Double
   , allbed_upper :: Double
@@ -110,13 +112,15 @@ data Rec = Rec
   , icuover_mean :: Double
   , icuover_lower :: Double
   , icuover_upper :: Double
+  , location_name :: String
   } deriving Show
 
 instance FromNamedRecord Rec where
   parseNamedRecord m =
     Rec <$>
-      m .: "location_name" <*>
-      m .: "date_reported" <*>
+      m .: "V1" <*>
+      m .: "location" <*>
+      m .: "date" <*>
       m .: "allbed_mean" <*>
       m .: "allbed_lower" <*>
       m .: "allbed_upper" <*>
@@ -143,7 +147,8 @@ instance FromNamedRecord Rec where
       m .: "bedover_upper" <*>
       m .: "icuover_mean" <*>
       m .: "icuover_lower" <*>
-      m .: "icuover_upper"
+      m .: "icuover_upper" <*>
+      m .: "location_name"
 
 main = do
   bs <- readFile path
@@ -158,8 +163,8 @@ main = do
                                      " (# deaths: " <> printf "%.0f" deaths <> ")"))
             (sortBy (compare `on` view _3) (rights (fmap (doState mp deathsPerCapita) stateInfo)))
       putStrLn "\nDate of Predicted Peak Ventilator Use\n"
-      mapM_ (\(s, r) -> putStrLn (date_reported r <> " - " <> stateName s))
-            (sortBy (compare `on` (date_reported . snd)) (rights (fmap (doState mp ventilatorPeak) stateInfo)))
+      mapM_ (\(s, r) -> putStrLn (date r <> " - " <> stateName s))
+            (sortBy (compare `on` (date . snd)) (rights (fmap (doState mp ventilatorPeak) stateInfo)))
   where
     doState :: Map String [Rec] -> (State -> [Rec] -> r) -> State -> Either String r
     doState mp f s =
