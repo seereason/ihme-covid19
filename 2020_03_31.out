@@ -1,0 +1,127 @@
+-*- mode: compilation; default-directory: "~/git/ihme-covid19/" -*-
+Compilation started at Wed Apr  1 06:04:18
+
+cabal new-run
+Build profile: -w ghc-8.6.2 -O1
+In order, the following will be built (use -v for more details):
+ - ihme-covid19-0.1 (exe:ihme-covid19) (file src/Main.hs changed)
+Preprocessing executable 'ihme-covid19' for ihme-covid19-0.1..
+Building executable 'ihme-covid19' for ihme-covid19-0.1..
+[1 of 1] Compiling Main             ( src/Main.hs, /home/dsf/git/ihme-covid19/dist-newstyle/build/x86_64-linux/ghc-8.6.2/ihme-covid19-0.1/build/ihme-covid19/ihme-covid19-tmp/Main.o )
+Linking /home/dsf/git/ihme-covid19/dist-newstyle/build/x86_64-linux/ghc-8.6.2/ihme-covid19-0.1/build/ihme-covid19/ihme-covid19 ...
+
+Predicted Deaths per 1M
+
+92 - Vermont (# deaths: 58)
+122 - Pennsylvania (# deaths: 1562)
+128 - Oregon (# deaths: 551)
+129 - California (# deaths: 5161)
+150 - North Carolina (# deaths: 1597)
+158 - Washington (# deaths: 1233)
+158 - Wisconsin (# deaths: 926)
+161 - Ohio (# deaths: 1886)
+161 - Indiana (# deaths: 1083)
+166 - Delaware (# deaths: 163)
+178 - Utah (# deaths: 586)
+181 - Kentucky (# deaths: 815)
+185 - Arkansas (# deaths: 562)
+186 - Minnesota (# deaths: 1061)
+187 - Arizona (# deaths: 1380)
+204 - South Carolina (# deaths: 1060)
+206 - Alaska (# deaths: 151)
+208 - Texas (# deaths: 6128)
+208 - Missouri (# deaths: 1283)
+215 - Kansas (# deaths: 627)
+218 - Idaho (# deaths: 397)
+220 - Illinois (# deaths: 2789)
+224 - North Dakota (# deaths: 171)
+228 - South Dakota (# deaths: 206)
+230 - Nebraska (# deaths: 448)
+238 - New Jersey (# deaths: 2129)
+246 - New Hampshire (# deaths: 338)
+248 - Montana (# deaths: 270)
+251 - New Mexico (# deaths: 526)
+251 - Wyoming (# deaths: 142)
+251 - Rhode Island (# deaths: 265)
+266 - Hawaii (# deaths: 376)
+272 - Georgia (# deaths: 2916)
+274 - Maine (# deaths: 368)
+278 - Maryland (# deaths: 1691)
+279 - West Virginia (# deaths: 495)
+293 - Nevada (# deaths: 921)
+305 - District of Columbia (# deaths: 220)
+306 - Connecticut (# deaths: 1092)
+315 - Florida (# deaths: 6937)
+322 - Michigan (# deaths: 3235)
+332 - Oklahoma (# deaths: 1312)
+338 - Massachusetts (# deaths: 2357)
+356 - Virginia (# deaths: 3073)
+365 - Colorado (# deaths: 2135)
+367 - Mississippi (# deaths: 1098)
+416 - Louisiana (# deaths: 1934)
+430 - Iowa (# deaths: 1367)
+473 - Tennessee (# deaths: 3259)
+828 - New York (# deaths: 16090)
+1494 - Alabama (# deaths: 7334)
+34563000 - Life Care Center, Kirkland, WA (# deaths: 35)
+536836000 - King and Snohomish Counties (excluding Life Care Center), WA (# deaths: 537)
+661783000 - Other Counties, WA (# deaths: 662)
+
+Date of Predicted Peak Ventilator Use
+
+2020-02-28 - Life Care Center, Kirkland, WA
+2020-04-01 - Vermont
+2020-04-04 - King and Snohomish Counties (excluding Life Care Center), WA
+2020-04-06 - New Jersey
+2020-04-06 - New York
+2020-04-07 - Louisiana
+2020-04-07 - Michigan
+2020-04-09 - Delaware
+2020-04-12 - Alaska
+2020-04-12 - Washington
+2020-04-13 - Connecticut
+2020-04-13 - District of Columbia
+2020-04-13 - Massachusetts
+2020-04-14 - Colorado
+2020-04-14 - Illinois
+2020-04-14 - Maine
+2020-04-14 - New Hampshire
+2020-04-14 - Pennsylvania
+2020-04-16 - Indiana
+2020-04-16 - Ohio
+2020-04-16 - Tennessee
+2020-04-17 - Rhode Island
+2020-04-18 - Alabama
+2020-04-18 - Nevada
+2020-04-18 - North Dakota
+2020-04-19 - Mississippi
+2020-04-19 - Oklahoma
+2020-04-20 - Georgia
+2020-04-20 - Minnesota
+2020-04-20 - Nebraska
+2020-04-20 - Utah
+2020-04-21 - New Mexico
+2020-04-22 - Arkansas
+2020-04-23 - Idaho
+2020-04-23 - Montana
+2020-04-24 - Arizona
+2020-04-24 - North Carolina
+2020-04-24 - Other Counties, WA
+2020-04-24 - Wisconsin
+2020-04-25 - California
+2020-04-25 - Kansas
+2020-04-25 - South Carolina
+2020-04-26 - Maryland
+2020-04-27 - Iowa
+2020-04-29 - Hawaii
+2020-04-29 - West Virginia
+2020-04-30 - Florida
+2020-04-30 - South Dakota
+2020-04-30 - Wyoming
+2020-05-01 - Oregon
+2020-05-02 - Texas
+2020-05-13 - Kentucky
+2020-05-17 - Virginia
+2020-05-19 - Missouri
+
+Compilation finished at Wed Apr  1 06:04:22

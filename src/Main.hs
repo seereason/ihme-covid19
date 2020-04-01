@@ -13,7 +13,8 @@ import Prelude hiding (readFile)
 import Text.Printf
 
 -- path = "2020_03_29/hospitalization_all_locs_corrected.csv
-path = "2020_03_30/Hospitalization_all_locs.csv"
+-- path = "2020_03_30/Hospitalization_all_locs.csv"
+path = "2020_03_31.1/Hospitalization_all_locs.csv"
 
 data State
   = State
