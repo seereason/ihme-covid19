@@ -15,6 +15,12 @@ import Text.Printf
 
 type Date = String
 
+-- Site data:
+-- https://covid19.healthdata.org/
+-- https://ihmecovid19storage.blob.core.windows.net/latest/ihme-covid19.zip
+-- https://covidtracking.com/api/
+-- http://covidtracking.com/api/states/daily.csv
+
 -- path = "2020_03_29/hospitalization_all_locs_corrected.csv
 -- path = "2020_03_30/Hospitalization_all_locs.csv"
 path = "2020_03_31.1/Hospitalization_all_locs.csv"
