@@ -1,16 +1,19 @@
 {-# LANGUAGE OverloadedStrings, TypeApplications #-}
 
-import Control.Lens (_3, view)
+import Control.Lens -- (_2, _3, ix, view)
 import Data.ByteString.Lazy hiding (putStrLn, take)
 import Data.Csv hiding (lookup)
 import Data.Either (rights)
 import Data.Foldable
 import Data.Function (on)
 import Data.List (sortBy)
-import Data.Map as Map ((!), fromListWith, keys, lookup, Map)
+import Data.Map as Map ((!), fromListWith, keys, lookup, Map, singleton, toDescList)
+import qualified Data.Map as Map (toList)
 import Data.Vector hiding ((!), mapM_, sum, take, toList)
 import Prelude hiding (readFile)
 import Text.Printf
+
+type Date = String
 
 -- path = "2020_03_29/hospitalization_all_locs_corrected.csv
 -- path = "2020_03_30/Hospitalization_all_locs.csv"
@@ -20,8 +23,8 @@ data State
   = State
     { stateName :: String
     , statePop :: Integer
-    , deaths :: Integer
-    } deriving Show
+    , __deaths :: Integer
+    } deriving (Show, Eq, Ord)
 
 stateInfo :: [State]
 stateInfo =
@@ -43,8 +46,8 @@ stateInfo =
   , State "Iowa" 3179849 4
   , State "Kansas" 2910357 6
   , State "Kentucky" 4499692 9
-  , State "King and Snohomish Counties (excluding Life Care Center), WA" 1 0
-  , State "Life Care Center, Kirkland, WA" 1 0
+  , State "King and Snohomish Counties (excluding Life Care Center), WA" (2189000 + 801633) 0
+  , State "Life Care Center, Kirkland, WA" 100 35
   , State "Louisiana" 4645184 151
   , State "Maine" 1345790 3
   , State "Maryland" 6083116 15
@@ -85,7 +88,7 @@ stateInfo =
 data Rec = Rec
   { v1 :: String
   , location :: String
-  , date :: String
+  , date_reported :: Date
   , allbed_mean :: Double
   , allbed_lower :: Double
   , allbed_upper :: Double
@@ -151,35 +154,82 @@ instance FromNamedRecord Rec where
       m .: "icuover_upper" <*>
       m .: "location_name"
 
-main = do
-  bs <- readFile path
-  case decodeByName bs of
-    Left s -> putStrLn s
-    Right (h, v) -> do
-      let mp :: Map String [Rec]
-          mp = fromListWith (<>) (fmap (\r -> (location_name r, [r])) (toList v))
-      putStrLn "\nPredicted Deaths per 1M\n"
-      mapM_ (\(s, deaths, dfactor) -> putStrLn (printf "%.0f" (dfactor * 1000000.0)  <> " - " <>
-                                     stateName s <>
-                                     " (# deaths: " <> printf "%.0f" deaths <> ")"))
-            (sortBy (compare `on` view _3) (rights (fmap (doState mp deathsPerCapita) stateInfo)))
-      putStrLn "\nDate of Predicted Peak Ventilator Use\n"
-      mapM_ (\(s, r) -> putStrLn (date r <> " - " <> stateName s))
-            (sortBy (compare `on` (date . snd)) (rights (fmap (doState mp ventilatorPeak) stateInfo)))
+data Results = Results [Deaths] [Peak]
+type Deaths = (State, [(Date, (Double, Double))])
+type Peak = (State, [(Date, Rec)])
+type Peak' = Rec
+
+main = withLocMap doDate path
+
+doDate :: Map String [Rec] -> IO ()
+doDate mp = do
+  putDeaths (deathRate "2020_03_31" mp)
+  putPeak (peak "2020_03_31" mp)
+
+deathRate :: Date -> Map String [Rec] -> [Deaths]
+deathRate date mp =
+  sortDeaths $ Map.toList (fmap Map.toDescList (deathMap date mp))
   where
-    doState :: Map String [Rec] -> (State -> [Rec] -> r) -> State -> Either String r
-    doState mp f s =
-      case Map.lookup (stateName s) mp of
-        Nothing -> Left ("Unknown state: " <> show s)
-        Just rs -> Right (f s rs)
-    deathsPerCapita :: State -> [Rec] -> (State, Double, Double)
-    deathsPerCapita s rs =
-      (s, deaths, dfactor)
+    sortDeaths :: [(State, [(Date, (Double, Double))])] -> [(State, [(Date, (Double, Double))])]
+    sortDeaths = sortBy (flip (compare `on` (view _2 . view _2 . (\(x:_) -> x) . view _2)))
+
+deathMap :: Date -> Map String [Rec] -> Map State (Map Date (Double, Double))
+deathMap date mp =
+  foldMap (either mempty id . doState mp stateDeaths) stateInfo
+  where
+    stateDeaths :: State -> [Rec] -> Map State (Map Date (Double, Double))
+    stateDeaths s rs =
+      Map.singleton s (Map.singleton date (deaths, dfactor))
       where
         name = stateName s
         deaths = sum (fmap deaths_mean rs)
         dfactor = deaths / fromIntegral (statePop s)
-    ventilatorPeak :: State -> [Rec] -> (State, Rec)
-    ventilatorPeak s rs = do
+
+peak :: Date -> Map String [Rec] -> [Peak]
+peak date mp =
+  sortPeak $ Map.toList (fmap Map.toDescList (peakMap date mp))
+  where
+    sortPeak :: [(State, [(Date, Rec)])] -> [(State, [(Date, Rec)])]
+    sortPeak = sortBy (compare `on` (date_reported . view _2 . (\(x:_) -> x) . view _2))
+
+    statePeak :: State -> [Rec] -> Peak
+    statePeak s rs = do
       case sortBy (flip (compare `on` invVen_mean)) rs of
-        (r : _) -> (s, r)
+        (r : _) -> (s, [(date, r)])
+
+peakMap :: Date -> Map String [Rec] -> Map State (Map Date Rec)
+peakMap date mp =
+  foldMap (either mempty id . doState mp statePeak) stateInfo
+  where
+    statePeak :: State -> [Rec] -> Map State (Map Date Peak')
+    statePeak s rs = do
+      case sortBy (flip (compare `on` invVen_mean)) rs of
+        (r : _) -> Map.singleton s (Map.singleton date r)
+
+putDeaths :: [Deaths] -> IO ()
+putDeaths deaths = do
+  putStrLn "\nPredicted Deaths per 1M\n"
+  mapM_ (\(s, [(date, (deaths, dfactor))]) ->
+            putStrLn (printf "%.0f" (dfactor * 1000000.0) <>
+                      " - " <>
+                      stateName s <>
+                      " (# deaths: " <> printf "%.0f" deaths <> ")"))
+        deaths
+
+putPeak :: [Peak] -> IO ()
+putPeak peak = do
+  putStrLn "\nDate of Predicted Peak Ventilator Use\n"
+  mapM_ (\(s, [(_date, r)]) -> putStrLn (date_reported r <> " - " <> stateName s)) peak
+
+withLocMap :: Show r => (Map String [Rec] -> IO r) -> FilePath -> IO r
+withLocMap f path = do
+  bs <- readFile path
+  case decodeByName bs of
+    Left s -> putStrLn s >> error s
+    Right (h, v) -> f (fromListWith (<>) (fmap (\r -> (location_name r, [r])) (toList v)))
+
+doState :: Map String [Rec] -> (State -> [Rec] -> r) -> State -> Either String r
+doState mp f s =
+  case Map.lookup (stateName s) mp of
+    Nothing -> Left ("Unknown state: " <> show s)
+    Just rs -> Right (f s rs)
